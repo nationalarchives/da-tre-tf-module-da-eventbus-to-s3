@@ -1,15 +1,15 @@
 # Create the bucket for archiving
-resource "aws_s3_bucket" "s3_bucket_tre_out_archive" {
-  bucket = "${var.env}-${var.prefix}-tre-out-archive"
+resource "aws_s3_bucket" "s3_bucket_tre_out_capture" {
+  bucket = "${var.env}-${var.prefix}-tre-out-capture"
 }
 
-resource "aws_s3_bucket_acl" "s3_tre_out_archive_acl" {
-  bucket = aws_s3_bucket.s3_bucket_tre_out_archive.id
+resource "aws_s3_bucket_acl" "s3_tre_out_capture_acl" {
+  bucket = aws_s3_bucket.s3_bucket_tre_out_capture.id
   acl    = "private"
 }
 
-resource "aws_s3_bucket_public_access_block" "s3_bucket_tre_out_archive_block_public" {
-  bucket                  = aws_s3_bucket.s3_bucket_tre_out_archive.id
+resource "aws_s3_bucket_public_access_block" "s3_bucket_tre_out_capture_block_public" {
+  bucket                  = aws_s3_bucket.s3_bucket_tre_out_capture.id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -17,14 +17,14 @@ resource "aws_s3_bucket_public_access_block" "s3_bucket_tre_out_archive_block_pu
 }
 
 # Create IAM service account for Kinesis
-resource "aws_iam_role" "firehose_archive_role" {
-  name                 = "${var.env}-${var.prefix}-firehose-archive-role"
-  assume_role_policy   = data.aws_iam_policy_document.firehose_archive_role_assume_policy.json
+resource "aws_iam_role" "firehose_capture_role" {
+  name                 = "${var.env}-${var.prefix}-firehose-capture-role"
+  assume_role_policy   = data.aws_iam_policy_document.firehose_capture_role_assume_policy.json
   permissions_boundary = var.tre_permission_boundary_arn
 }
 
 
-data "aws_iam_policy_document" "firehose_archive_role_assume_policy" {
+data "aws_iam_policy_document" "firehose_capture_role_assume_policy" {
   statement {
     effect = "Allow"
 
@@ -37,7 +37,7 @@ data "aws_iam_policy_document" "firehose_archive_role_assume_policy" {
   }
 }
 
-data "aws_iam_policy_document" "firehose_archive_role_policy" {
+data "aws_iam_policy_document" "firehose_capture_role_policy" {
   statement {
     effect = "Allow"
 
@@ -51,21 +51,21 @@ data "aws_iam_policy_document" "firehose_archive_role_policy" {
     ]
 
     resources = [
-      "${aws_s3_bucket.s3_bucket_tre_out_archive.arn}/*",
-      "${aws_s3_bucket.s3_bucket_tre_out_archive.arn}"
+      "${aws_s3_bucket.s3_bucket_tre_out_capture.arn}/*",
+      "${aws_s3_bucket.s3_bucket_tre_out_capture.arn}"
     ]
   }
 }
 
-resource "aws_iam_policy" "firehose_archive_role_policy" {
-  name        = "${var.env}-${var.prefix}-firehose-archive-role-policy"
+resource "aws_iam_policy" "firehose_capture_role_policy" {
+  name        = "${var.env}-${var.prefix}-firehose-capture-role-policy"
   description = "Policy for firehouse to dump to S3 for archiving"
-  policy      = data.aws_iam_policy_document.firehose_archive_role_policy.json
+  policy      = data.aws_iam_policy_document.firehose_capture_role_policy.json
 }
 
-resource "aws_iam_role_policy_attachment" "firehose_archive_role_policy_attach" {
-  role       = aws_iam_role.firehose_archive_role.name
-  policy_arn = aws_iam_policy.firehose_archive_role_policy.arn
+resource "aws_iam_role_policy_attachment" "firehose_capture_role_policy_attach" {
+  role       = aws_iam_role.firehose_capture_role.name
+  policy_arn = aws_iam_policy.firehose_capture_role_policy.arn
 }
 
 # Create IAM role for SNS -> Firehose
@@ -101,7 +101,7 @@ data "aws_iam_policy_document" "sns_firehose_delivery_role_policy" {
     ]
 
     resources = [
-      "${aws_kinesis_firehose_delivery_stream.sns_firehose_tre_out_archive_s3.arn}"
+      "${aws_kinesis_firehose_delivery_stream.sns_firehose_tre_out_capture_s3.arn}"
     ]
   }
 }
@@ -118,13 +118,13 @@ resource "aws_iam_role_policy_attachment" "sns_firehose_delivery_role_policy_att
 }
 
 # Firehose
-resource "aws_kinesis_firehose_delivery_stream" "sns_firehose_tre_out_archive_s3" {
-  name        = "${var.env}-${var.prefix}-sns-firehose-tre-out-archive-s3"
+resource "aws_kinesis_firehose_delivery_stream" "sns_firehose_tre_out_capture_s3" {
+  name        = "${var.env}-${var.prefix}-sns-firehose-tre-out-capture-s3"
   destination = "extended_s3"
 
   extended_s3_configuration {
-    role_arn        = aws_iam_role.firehose_archive_role.arn
-    bucket_arn      = aws_s3_bucket.s3_bucket_tre_out_archive.arn
+    role_arn        = aws_iam_role.firehose_capture_role.arn
+    bucket_arn      = aws_s3_bucket.s3_bucket_tre_out_capture.arn
     buffer_interval = 60
     buffer_size     = 64
 
@@ -152,11 +152,11 @@ resource "aws_kinesis_firehose_delivery_stream" "sns_firehose_tre_out_archive_s3
   }
 }
 
-resource "aws_sns_topic_subscription" "sns_firehose_tre_out_archive_s3_subscription" {
+resource "aws_sns_topic_subscription" "sns_firehose_tre_out_capture_s3_subscription" {
   topic_arn             = var.tre_out_topic_arn
   protocol              = "firehose"
   subscription_role_arn = aws_iam_role.sns_firehose_delivery_role.arn
-  endpoint              = aws_kinesis_firehose_delivery_stream.sns_firehose_tre_out_archive_s3.arn
+  endpoint              = aws_kinesis_firehose_delivery_stream.sns_firehose_tre_out_capture_s3.arn
   raw_message_delivery  = true
   filter_policy = jsonencode(
     {
