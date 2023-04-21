@@ -151,20 +151,3 @@ resource "aws_kinesis_firehose_delivery_stream" "sns_firehose_tre_out_capture_s3
     }
   }
 }
-
-resource "aws_sns_topic_subscription" "sns_firehose_tre_out_capture_s3_subscription" {
-  topic_arn             = var.tre_out_topic_arn
-  protocol              = "firehose"
-  subscription_role_arn = aws_iam_role.sns_firehose_delivery_role.arn
-  endpoint              = aws_kinesis_firehose_delivery_stream.sns_firehose_tre_out_capture_s3.arn
-  raw_message_delivery  = true
-  filter_policy = jsonencode(
-    {
-      "properties" : {
-        "messageType" : [
-          "uk.gov.nationalarchives.tre.messages.judgmentpackage.available.JudgmentPackageAvailable"
-        ]
-      }
-  })
-  filter_policy_scope = "MessageBody"
-}
