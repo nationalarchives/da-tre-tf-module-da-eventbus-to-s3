@@ -3,11 +3,6 @@ resource "aws_s3_bucket" "s3_bucket_tre_out_capture" {
   bucket = "${var.env}-${var.prefix}-tre-out-capture"
 }
 
-resource "aws_s3_bucket_acl" "s3_tre_out_capture_acl" {
-  bucket = aws_s3_bucket.s3_bucket_tre_out_capture.id
-  acl    = "private"
-}
-
 resource "aws_s3_bucket_public_access_block" "s3_bucket_tre_out_capture_block_public" {
   bucket                  = aws_s3_bucket.s3_bucket_tre_out_capture.id
   block_public_acls       = true
