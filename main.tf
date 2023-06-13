@@ -126,7 +126,7 @@ resource "aws_kinesis_firehose_delivery_stream" "sns_firehose_tre_out_capture_s3
     dynamic_partitioning_configuration {
       enabled = "true"
     }
-    prefix              = "judgmentpackage.available.JudgmentPackageAvailable/!{partitionKeyFromQuery:orginator}/!{partitionKeyFromQuery:reference}/!{partitionKeyFromQuery:executionId}/"
+    prefix              = "courtdocumentpackage.available.CourtDocumentPackageAvailable/!{partitionKeyFromQuery:orginator}/!{partitionKeyFromQuery:reference}/!{partitionKeyFromQuery:executionId}/"
     error_output_prefix = "errors/!{firehose:error-output-type}/"
 
     processing_configuration {
