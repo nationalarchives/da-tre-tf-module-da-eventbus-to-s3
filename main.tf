@@ -120,8 +120,8 @@ resource "aws_kinesis_firehose_delivery_stream" "sns_firehose_tre_out_capture_s3
   extended_s3_configuration {
     role_arn        = aws_iam_role.firehose_capture_role.arn
     bucket_arn      = aws_s3_bucket.s3_bucket_tre_out_capture.arn
-    buffer_interval = 60
-    buffer_size     = 64
+    buffering_interval = 60
+    buffering_size     = 64
 
     dynamic_partitioning_configuration {
       enabled = "true"
