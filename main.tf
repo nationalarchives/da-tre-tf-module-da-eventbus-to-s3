@@ -1,10 +1,10 @@
 # Create the bucket for archiving
-resource "aws_s3_bucket" "s3_bucket_tre_out_capture" {
-  bucket = "${var.env}-${var.prefix}-tre-out-capture"
+resource "aws_s3_bucket" "s3_bucket_eventbus_capture" {
+  bucket = "${var.env}-${var.prefix}-eventbus-capture"
 }
 
-resource "aws_s3_bucket_public_access_block" "s3_bucket_tre_out_capture_block_public" {
-  bucket                  = aws_s3_bucket.s3_bucket_tre_out_capture.id
+resource "aws_s3_bucket_public_access_block" "s3_bucket_eventbus_capture_block_public" {
+  bucket                  = aws_s3_bucket.s3_bucket_eventbus_capture.id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -46,8 +46,8 @@ data "aws_iam_policy_document" "firehose_capture_role_policy" {
     ]
 
     resources = [
-      "${aws_s3_bucket.s3_bucket_tre_out_capture.arn}/*",
-      "${aws_s3_bucket.s3_bucket_tre_out_capture.arn}"
+      "${aws_s3_bucket.s3_bucket_eventbus_capture.arn}/*",
+      "${aws_s3_bucket.s3_bucket_eventbus_capture.arn}"
     ]
   }
 }
@@ -96,7 +96,7 @@ data "aws_iam_policy_document" "sns_firehose_delivery_role_policy" {
     ]
 
     resources = [
-      "${aws_kinesis_firehose_delivery_stream.sns_firehose_tre_out_capture_s3.arn}"
+      "${aws_kinesis_firehose_delivery_stream.sns_firehose_eventbus_capture_s3.arn}"
     ]
   }
 }
@@ -113,20 +113,20 @@ resource "aws_iam_role_policy_attachment" "sns_firehose_delivery_role_policy_att
 }
 
 # Firehose
-resource "aws_kinesis_firehose_delivery_stream" "sns_firehose_tre_out_capture_s3" {
-  name        = "${var.env}-${var.prefix}-sns-firehose-tre-out-capture-s3"
+resource "aws_kinesis_firehose_delivery_stream" "sns_firehose_eventbus_capture_s3" {
+  name        = "${var.env}-${var.prefix}-sns-firehose-eventbus-capture-s3"
   destination = "extended_s3"
 
   extended_s3_configuration {
     role_arn        = aws_iam_role.firehose_capture_role.arn
-    bucket_arn      = aws_s3_bucket.s3_bucket_tre_out_capture.arn
+    bucket_arn      = aws_s3_bucket.s3_bucket_eventbus_capture.arn
     buffer_interval = 60
     buffer_size     = 64
 
     dynamic_partitioning_configuration {
       enabled = "true"
     }
-    prefix              = "courtdocumentpackage.available.CourtDocumentPackageAvailable/!{partitionKeyFromQuery:orginator}/!{partitionKeyFromQuery:reference}/!{partitionKeyFromQuery:executionId}/"
+    prefix              = "!{partitionKeyFromQuery:originator}/!{partitionKeyFromQuery:reference}/!{partitionKeyFromQuery:executionId}/"
     error_output_prefix = "errors/!{firehose:error-output-type}/"
 
     processing_configuration {
@@ -136,7 +136,7 @@ resource "aws_kinesis_firehose_delivery_stream" "sns_firehose_tre_out_capture_s3
         type = "MetadataExtraction"
         parameters {
           parameter_name  = "MetadataExtractionQuery"
-          parameter_value = "{executionId:.properties.executionId,orginator:.parameters.originator,reference:.parameters.reference}"
+          parameter_value = "{executionId:.properties.executionId,originator:.parameters.originator,reference:.parameters.reference}"
         }
         parameters {
           parameter_name  = "JsonParsingEngine"
