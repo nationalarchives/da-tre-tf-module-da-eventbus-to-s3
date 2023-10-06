@@ -122,27 +122,8 @@ resource "aws_kinesis_firehose_delivery_stream" "sns_firehose_eventbus_capture_s
     bucket_arn      = aws_s3_bucket.s3_bucket_eventbus_capture.arn
     buffer_interval = 60
     buffer_size     = 64
-
-    dynamic_partitioning_configuration {
-      enabled = "true"
-    }
-    prefix              = "!{partitionKeyFromQuery:originator}/!{partitionKeyFromQuery:reference}/!{partitionKeyFromQuery:executionId}/"
+    
+    prefix              = "messages/"
     error_output_prefix = "errors/!{firehose:error-output-type}/"
-
-    processing_configuration {
-      enabled = true
-
-      processors {
-        type = "MetadataExtraction"
-        parameters {
-          parameter_name  = "MetadataExtractionQuery"
-          parameter_value = "{executionId:.properties.executionId,originator:.parameters.originator,reference:.parameters.reference}"
-        }
-        parameters {
-          parameter_name  = "JsonParsingEngine"
-          parameter_value = "JQ-1.6"
-        }
-      }
-    }
   }
 }
