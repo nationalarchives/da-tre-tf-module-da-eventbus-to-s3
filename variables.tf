@@ -12,8 +12,3 @@ variable "tre_permission_boundary_arn" {
   description = "ARN of the TRE permission boundary policy"
   type        = string
 }
-
-variable "tre_out_topic_arn" {
-  description = "ARN of the output topic to subscribe to"
-  type        = string
-}

@@ -1,5 +1,5 @@
-output "sns_firehose_tre_out_capture_s3_arn" {
-  value       = aws_kinesis_firehose_delivery_stream.sns_firehose_tre_out_capture_s3.arn
+output "sns_firehose_eventbus_capture_s3_arn" {
+  value       = aws_kinesis_firehose_delivery_stream.sns_firehose_eventbus_capture_s3.arn
   description = "ARN of the firehose stream to delivers to S3"
 }
 
