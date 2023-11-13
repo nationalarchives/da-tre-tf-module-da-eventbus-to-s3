@@ -1,0 +1,8 @@
+on:
+  push:
+    branches:
+      - 'main'
+  workflow_dispatch:
+jobs:
+  push-next-tag:
+    uses: nationalarchives/da-tre-github-actions/.github/workflows/get-and-tag-next-version.yml@0.0.23
