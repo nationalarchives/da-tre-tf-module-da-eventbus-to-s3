@@ -132,6 +132,11 @@ resource "aws_kinesis_firehose_delivery_stream" "sns_firehose_eventbus_capture_s
 
     processing_configuration {
       enabled = "true"
+
+      processors {
+        type = "AppendDelimiterToRecord"
+      }
+
       processors {
         type = "MetadataExtraction"
         parameters {
