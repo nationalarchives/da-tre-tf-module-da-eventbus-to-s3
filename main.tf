@@ -140,12 +140,12 @@ resource "aws_kinesis_firehose_delivery_stream" "sns_firehose_eventbus_capture_s
       processors {
         type = "MetadataExtraction"
         parameters {
-          parameter_name  = "JsonParsingEngine"
-          parameter_value = "JQ-1.6"
-        }
-        parameters {
           parameter_name  = "MetadataExtractionQuery"
           parameter_value = "{reference:(.parameters.reference // \"_no-reference\")}"
+        }
+        parameters {
+          parameter_name  = "JsonParsingEngine"
+          parameter_value = "JQ-1.6"
         }
       }
     }
