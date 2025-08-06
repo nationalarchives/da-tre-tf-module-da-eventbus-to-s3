@@ -1,3 +1,4 @@
+
 # Create the bucket for archiving
 resource "aws_s3_bucket" "s3_bucket_eventbus_capture" {
   bucket = "${var.env}-${var.prefix}-eventbus-capture"
@@ -18,6 +19,8 @@ resource "aws_iam_role" "firehose_capture_role" {
   permissions_boundary = var.tre_permission_boundary_arn
 }
 
+data "aws_caller_identity" "current" {
+}
 
 data "aws_iam_policy_document" "firehose_capture_role_assume_policy" {
   statement {
@@ -77,6 +80,12 @@ data "aws_iam_policy_document" "sns_firehose_delivery_role_assume_policy" {
     principals {
       type        = "Service"
       identifiers = ["sns.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
     }
 
     actions = ["sts:AssumeRole"]
